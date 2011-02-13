@@ -72,58 +72,53 @@
 		{
 			// create a new struct
 			loc.struct = $queryRowToStruct(properties=arguments.query, row=loc.i);
-			loc.structHash = $hashedKey(loc.struct);
-			if (!ListFind(loc.doneStructs, loc.structHash, Chr(7)))
+			if (Len(arguments.include) && arguments.returnIncluded)
 			{
-				if (Len(arguments.include) && arguments.returnIncluded)
+				// loop through our assocations to build nested objects attached to the main object
+				loc.xEnd = ListLen(arguments.include);
+				for (loc.x = 1; loc.x lte loc.xEnd; loc.x++)
 				{
-					// loop through our assocations to build nested objects attached to the main object
-					loc.xEnd = ListLen(arguments.include);
-					for (loc.x = 1; loc.x lte loc.xEnd; loc.x++)
+					loc.include = ListGetAt(arguments.include, loc.x);
+					if (variables.wheels.class.associations[loc.include].type == "hasMany")
 					{
-						loc.include = ListGetAt(arguments.include, loc.x);
-						if (variables.wheels.class.associations[loc.include].type == "hasMany")
+						// we have a hasMany assocation, so loop through all of the records again to find the ones that belong to our root object
+						loc.struct[loc.include] = [];
+						loc.hasManyDoneStructs = "";
+						
+						// only get a reference to our model once per assocation
+						loc.model = model(variables.wheels.class.associations[loc.include].modelName); 
+						
+						for (loc.j=1; loc.j <= arguments.query.recordCount; loc.j++)
 						{
-							// we have a hasMany assocation, so loop through all of the records again to find the ones that belong to our root object
-							loc.struct[loc.include] = [];
-							loc.hasManyDoneStructs = "";
+							// is there anything we can do here to not instantiate an object if it is not going to be use or is already created
+							// this extra instantiation is really slowing things down
+							loc.hasManyStruct = loc.model.$queryRowToStruct(properties=arguments.query, row=loc.j, base=false);
+							loc.hasManyStructHash = $hashedKey(loc.hasManyStruct);
 							
-							// only get a reference to our model once per assocation
-							loc.model = model(variables.wheels.class.associations[loc.include].modelName); 
-							
-							for (loc.j=1; loc.j <= arguments.query.recordCount; loc.j++)
+							if (!ListFind(loc.hasManyDoneStructs, loc.hasManyStructHash, Chr(7)))
 							{
-								// is there anything we can do here to not instantiate an object if it is not going to be use or is already created
-								// this extra instantiation is really slowing things down
-								loc.hasManyStruct = loc.model.$queryRowToStruct(properties=arguments.query, row=loc.j, base=false);
-								loc.hasManyStructHash = $hashedKey(loc.hasManyStruct);
+								// create object instance from values in current query row if it belongs to the current object
+								loc.primaryKeyColumnValues = "";
+								loc.kEnd = ListLen(primaryKeys());
 								
-								if (!ListFind(loc.hasManyDoneStructs, loc.hasManyStructHash, Chr(7)))
-								{
-									// create object instance from values in current query row if it belongs to the current object
-									loc.primaryKeyColumnValues = "";
-									loc.kEnd = ListLen(primaryKeys());
-									
-									for (loc.k=1; loc.k <= loc.kEnd; loc.k++)
-										loc.primaryKeyColumnValues = ListAppend(loc.primaryKeyColumnValues, arguments.query[primaryKeys(loc.k)][loc.j]);
+								for (loc.k=1; loc.k <= loc.kEnd; loc.k++)
+									loc.primaryKeyColumnValues = ListAppend(loc.primaryKeyColumnValues, arguments.query[primaryKeys(loc.k)][loc.j]);
 
-									if (Len(loc.model.$keyFromStruct(loc.hasManyStruct)) && this.$keyFromStruct(loc.struct) == loc.primaryKeyColumnValues)
-										ArrayAppend(loc.struct[loc.include], loc.hasManyStruct);
-									
-									loc.hasManyDoneStructs = ListAppend(loc.hasManyDoneStructs, loc.hasManyStructHash, Chr(7));
-								}
+								if (Len(loc.model.$keyFromStruct(loc.hasManyStruct)) && this.$keyFromStruct(loc.struct) == loc.primaryKeyColumnValues)
+									ArrayAppend(loc.struct[loc.include], loc.hasManyStruct);
+								
+								loc.hasManyDoneStructs = ListAppend(loc.hasManyDoneStructs, loc.hasManyStructHash, Chr(7));
 							}
 						}
-						else
-						{
-							// we have a hasOne or belongsTo assocation, so just add the object to the root object
-							loc.struct[loc.include] = model(variables.wheels.class.associations[loc.include].modelName).$queryRowToStruct(properties=arguments.query, row=loc.i, base=false);
-						}
+					}
+					else
+					{
+						// we have a hasOne or belongsTo assocation, so just add the object to the root object
+						loc.struct[loc.include] = model(variables.wheels.class.associations[loc.include].modelName).$queryRowToStruct(properties=arguments.query, row=loc.i, base=false);
 					}
 				}
-				ArrayAppend(loc.returnValue, loc.struct);
-				loc.doneStructs = ListAppend(loc.doneStructs, loc.structHash, Chr(7));
 			}
+			ArrayAppend(loc.returnValue, loc.struct);
 		}
 	</cfscript>
 	<cfreturn loc.returnValue />

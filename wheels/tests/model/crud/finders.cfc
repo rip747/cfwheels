@@ -210,5 +210,11 @@
 		<cfset loc.e = model("author").findOne(where="lastname = 'Bellenie'", include="posts")>
 		<cfset assert('IsArray(loc.e.posts) && ArrayIsEmpty(loc.e.posts)')>
 	</cffunction>
+	
+	<cffunction name="test_findall_different_types_return_same_number_of_records">
+		<cfset loc.e = model("author").findAll(select="id,title,body", include="posts")>
+ 		<cfset loc.r = model("author").findAll(select="posts.id, posts.title, posts.body, posts.views", include="posts", returnAs="objects")>
+		<cfset assert('loc.e.recordcount eq arraylen(loc.r)')>
+	</cffunction>
 
 </cfcomponent>
