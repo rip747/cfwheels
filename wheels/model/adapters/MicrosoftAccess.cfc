@@ -19,30 +19,24 @@
 		<!--- Currency might be better as cf_sql_decimal, however MSAccess stores Currency as double --->
 		<!--- MSAccess Yes/No fields become cf_sql_bit. A default value (true or false) needs to be assigned to a Yes/No field in MSAccess or the table can't be accessed & throws a CF error' --->
 		<cfargument name="type" type="string" required="true">
-		<cfset loc = {}>		
-		<cfloop index='i' delimiters='#chr(10)#' list='
-			VarChar cf_sql_varchar
-			LongText cf_sql_clob
-			Byte cf_sql_tinyint
-			Decimal cf_sql_decimal
-			Short cf_sql_smallint
-			Long cf_sql_integer
-			Single cf_sql_real
-			Double cf_sql_double
-			DateTime cf_sql_timestamp
-			Currency cf_sql_double
-			Bit cf_sql_bit
-		'>
-		<cfif arguments.type IS trim(listfirst(trim(i),' '))>
-			<cfset loc.returnValue = trim(listlast(trim(i),' '))>
-			<cfbreak>
-		</cfif>			
-		</cfloop>		
-		
-		<!--- <cffile action="append" addnewline="true" file="c:\!log.txt" output="#arguments.type# : #loc.returnValue#" > --->		
-
+		<cfscript>
+			var loc = {};
+			switch(arguments.type)
+			{
+				case "": case "varchar": case "char": case "nvarchar": case "nchar": {loc.returnValue = "cf_sql_varchar"; break;}
+				case "longtext": {loc.returnValue = "cf_sql_clob"; break;}
+				case "byte": {loc.returnValue = "cf_sql_tinyint"; break;}
+				case "decimal": {loc.returnValue = "cf_sql_decimal"; break;}
+				case "short": {loc.returnValue = "cf_sql_smallint"; break;}
+				case "long": {loc.returnValue = "cf_sql_integer"; break;}
+				case "single": {loc.returnValue = "cf_sql_real"; break;}
+				case "double": case "currency": {loc.returnValue = "cf_sql_double"; break;}
+				case "bit": {loc.returnValue = "cf_sql_bit"; break;}
+				case "longbinary": {loc.returnValue = "cf_sql_blob"; break;}
+				case "datetime": {loc.returnValue = "cf_sql_timestamp"; break;}
+			}
+		</cfscript>	
 		<cfreturn loc.returnValue>
-
 	</cffunction>
 	
 	<!--- Phord change $query --->
