@@ -31,6 +31,10 @@
 	<cfset loc.intColumnType = "number(38,0)">
 	<cfset loc.floatColumnType = "number(38,2)">
 	<cfset loc.dateTimeDefault = "to_timestamp(#loc.dateTimeDefault#,'yyyy-dd-mm hh24:mi:ss.FF')">
+<cfelseif loc.db eq "msjet">
+	<cfset loc.identityColumnType = "int NOT NULL IDENTITY(1,1)">
+	<cfset loc.binaryColumnType = "image">
+	<cfset loc.dateTimeDefault = "'2000-01-01 18:26:08'">
 </cfif>
 
 <!--- get a listing of all the tables and view in the database --->
@@ -207,7 +211,11 @@ CREATE TABLE tblusers
 (
 	id #loc.identityColumnType#
 	,username varchar(50) NOT NULL
+	<cfif loc.db eq "msjet">
+	,[password] varchar(50) NOT NULL
+	<cfelse>
 	,password varchar(50) NOT NULL
+	</cfif>
 	,firstname varchar(50) NOT NULL
 	,lastname varchar(50) NOT NULL
 	,address varchar(100) NULL
@@ -219,7 +227,11 @@ CREATE TABLE tblusers
 	,birthday #loc.datetimeColumnType# NULL
 	,birthdaymonth #loc.intColumnType# NULL
 	,birthdayyear #loc.intColumnType# NULL
+	<cfif loc.db eq "msjet">
+	,birthtime #loc.datetimeColumnType# NULL DEFAULT #PreserveSingleQuotes(loc.dateTimeDefault)#
+	<cfelse>
 	,birthtime #loc.datetimeColumnType# DEFAULT #PreserveSingleQuotes(loc.dateTimeDefault)# NULL
+	</cfif>
 	,isactive #loc.intColumnType# NULL
 	,PRIMARY KEY(id)
 ) #loc.storageEngine#
@@ -230,7 +242,11 @@ CREATE TABLE users
 (
 	id #loc.identityColumnType#
 	,username varchar(50) NOT NULL
+	<cfif loc.db eq "msjet">
+	,[password] varchar(50) NOT NULL
+	<cfelse>
 	,password varchar(50) NOT NULL
+	</cfif>
 	,firstname varchar(50) NOT NULL
 	,lastname varchar(50) NOT NULL
 	,address varchar(100) NULL
@@ -242,7 +258,11 @@ CREATE TABLE users
 	,birthday #loc.datetimeColumnType# NULL
 	,birthdaymonth #loc.intColumnType# NULL
 	,birthdayyear #loc.intColumnType# NULL
+	<cfif loc.db eq "msjet">
+	,birthtime #loc.datetimeColumnType# NULL DEFAULT #PreserveSingleQuotes(loc.dateTimeDefault)#
+	<cfelse>
 	,birthtime #loc.datetimeColumnType# DEFAULT #PreserveSingleQuotes(loc.dateTimeDefault)# NULL
+	</cfif>
 	,isactive #loc.intColumnType# NULL
 	,PRIMARY KEY(id)
 ) #loc.storageEngine#
