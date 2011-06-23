@@ -1,7 +1,7 @@
 <cfscript>
 	// we use $wheels here since these variables get placed in the variables scope of all objects and we need
 	// to make sure they don't clash with other wheels variables or any variables the develoepr may set
-	if (!StructIsEmpty(application.wheels.mixins))
+	if (IsDefined("application.wheels.mixins") && IsStruct(application.wheels.mixins) && !StructIsEmpty(application.wheels.mixins))
 	{
 		$wheels.metaData = GetMetaData(this);
 		if (StructKeyExists($wheels.metaData, "displayName"))

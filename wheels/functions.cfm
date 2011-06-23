@@ -14,6 +14,7 @@
 	<cfinclude template="events/onrequest.cfm">
 	<cfinclude template="events/onrequestend.cfm">
 	<cfinclude template="events/onrequeststart.cfm">
+	<cfinclude template="plugins/injection.cfm">
 <cfelse>
 	<cfinclude template="config/app.cfm">
 	<cfinclude template="wheels/controller/appfunctions.cfm">
@@ -27,4 +28,5 @@
 	<cfinclude template="wheels/events/onrequest.cfm">
 	<cfinclude template="wheels/events/onrequestend.cfm">
 	<cfinclude template="wheels/events/onrequeststart.cfm">
+	<cfinclude template="wheels/plugins/injection.cfm">
 </cfif>
